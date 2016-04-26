@@ -14,6 +14,7 @@ class Edge(object):
 		self.v1 = v1
 		self.v2 = v2
 		self.cost = distance_function(self.v1.position, self.v2.position)
+		self.time = self.cost
 
 	def __repr__(self):
 		"""Return a string representation of this object that can

@@ -64,10 +64,7 @@ class Graph(object):
         try:
             return self[v][w]
         except KeyError:
-            try:
-                return self[w][v]
-            except KeyError:
-                return None
+            return None
 
     has_edge = get_edge
 
@@ -97,4 +94,12 @@ class Graph(object):
         if edge:
             return edge.cost
         else:
-            return None
+            return float('Inf')
+
+    def time_edge(self, v, w):
+        """Returns the duration of an edge connecting vertives v and w."""
+        edge = get_edge(v, w)
+        if edge:
+            return edge.time
+        else:
+            return float('Inf')
