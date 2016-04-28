@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from Graph import TSP_Graph
 import numpy as np
-import utils
+import heuristic.utils as utils
+
+from heuristic.Graph import TSP_Graph
 
 class Solution:
     
@@ -62,7 +63,7 @@ class Solution:
         if self.customers_list is None:
             raise NameError("customer_list not setted yet")
         
-        valid_customers = np.empty(self.get_customers_list().shape)
+        valid_customers = np.empty(len(self.get_customers_list()))
         for i, c_id in enumerate(self.solution):
             customer = next((c for c in self.get_customers_list() if c.get_id() == c_id), None)
             
@@ -73,3 +74,6 @@ class Solution:
             valid_customers[i] = customer.is_valid()
         
         self.valid_customers = valid_customers
+        
+    def __str__(self):
+        return self.get_solution().__str__()

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import utils
+import heuristic.utils as utils
 
-from Graph import TSP_Graph
-from Solution import Solution
+from heuristic.Graph import TSP_Graph
+from heuristic.Solution import Solution
 
 def random_solution(graph, customers_list):
     if not isinstance(graph, TSP_Graph):
@@ -12,16 +12,15 @@ def random_solution(graph, customers_list):
     if not isinstance(customers_list, list):
         utils.raise_value_error(customers_list, list, type(customers_list))
         
-    customers = np.empty((len(customers_list), 3), dtpye=[('id', 'i4'), 
-                                                          ('ws', 'i6'), 
-                                                          ('t', 'i6')])
+    customers = np.empty((len(customers_list),), 
+                         dtype=[('id', 'i4'), ('ws', 'i8'), ('t', 'i8')])
     
     for i, customer in enumerate(customers_list):
         depot_pos = graph.get_customer_index(0)        
         c_pos = graph.get_customer_index(customer.get_id())
-        customers[i] = np.array([customer.get_id(), 
+        customers[i] = (customer.get_id(), 
                                  customer.get_window_start(), 
-                                 graph.get_time(depot_pos, c_pos)])
+                                 graph.get_time(depot_pos, c_pos))
     
     # Almacen siempre el primero, su ventana empieza en 0 y el tiempo hasta si
     # mismo es 0    
@@ -33,7 +32,10 @@ def random_solution(graph, customers_list):
     solution.set_solution(customers['id'])
     
     
-    start_time = customers['ws'][1] - customers['t'][1]
+    start_time = int(customers['ws'][1] - customers['t'][1])
+    if start_time < 0:
+        start_time = 0
+
     solution.set_start_time(start_time)
     
     curr_time = start_time
@@ -44,7 +46,7 @@ def random_solution(graph, customers_list):
         if time_visited < customer.get_window_start():
             time_visited = customer.get_window_start()
         
-        customer.set_time_visited(time_visited)
+        customer.set_time_visited(int(time_visited))
         curr_time = time_visited
     
     solution.set_customer_list(customers_list)

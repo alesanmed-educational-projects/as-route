@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import utils
+import heuristic.utils as utils
 
 class Customer:
     
@@ -33,3 +33,10 @@ class Customer:
         
         return self.get_window_start() <= self.get_time_visited() and \
                 self.get_window_end() >= self.get_time_visited()
+    
+    def __str__(self):
+        return "Customer {0}. Window: {1}-{2}. Visited at {3}".format(
+                    self.get_id(), 
+                    self.get_window_start(), 
+                    self.get_window_end(), 
+                    self.get_time_visited())
