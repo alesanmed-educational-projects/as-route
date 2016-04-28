@@ -11,7 +11,7 @@ class Vertex(object):
 	def __repr__(self):
 		"""Returns a string representation of this object that can
 		be evaluated as a Python expression."""
-		print_this = repr(self.label) + repr(self.position) + ". TW: " + repr(self.time_window) + "+" + repr(self.service_time) + ". Demand: " + repr(self.demand) 
+		print_this = repr(self.label)
 		return 'Vertex(%s)' % print_this
 
 	__str__ = __repr__

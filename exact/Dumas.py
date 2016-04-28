@@ -1,4 +1,8 @@
-from read_file import read_from_file
+from operator import attrgetter
+from Solution import Solution
+from read_file import silva_urrutia_format
+
+from Graph import Graph
 
 class Dumas(object):
 	"""Problem implementation"""
@@ -12,7 +16,7 @@ class Dumas(object):
 		print_this = "N_vertices: " + str(n_vertices) + ". E_edges: " + str(n_edges)
 		return 'Dumas(%s)' % print_this
 
-	def f(S, i, t_i):
+	def f(self, S, j):
 		"""
 		Dumas exact algorithm for the TSPTW
 		Literature: http://pubsonline.informs.org/doi/pdf/10.1287/opre.43.2.367
@@ -20,59 +24,104 @@ class Dumas(object):
 		In:
 			S: Subset of unvisited nodes of the solution
 			j: Final node of path. Contained in S.
-			t_i: Time of arriving at j.
 
 		Out:
-			Least cost of a path starting at depot node, 
+			End time t of a path starting at depot node, 
 			passing through every node in S exactly once, 
-			ending at node j (contained in S),
-			and ready to service node j at time t or later.
+			ending at node j (contained in S).
 		"""
 
 		if len(S)==2:
-			return self.base_case(S, i, t)
+			print("Caso base: " + str(S) + ", j=" + str(j))
+			print("es " + str(self.base_case(S, j).total_cost()))
+			print("factible : " + str(self.base_case(S, j).is_feasible()))
+			return self.base_case(S, j)
 		else:
-			s = S.remove(i)
-			solutions = []
-			for j in s:
-				t_j = self.t_j(i, j, t_i)
-				if self.time_restrictions(i, j, t_i, t_j):
-					c_ij = self.graph.cost_edge(i,j)
-					solutions.append(f(s, j, t_j) + c_ij)
-			return min(solutions)
+			S.remove(j)
+			print("Nuevo S: " + str(S))
+			print()
+			feasible_solutions = []
+			for i in S:
+				#ESTA es la zona wapa
+				if i!=self.graph.start:
+					t_ij = self.graph.time_edge(i,j)
+					s_i = i.service_time
 
-	def base_case(self, S, j, t):
-		return self.graph.cost_edge(S[0],S[1])
+					solution = self.f(S, i)
+					if solution:
+						t_i = solution.last_time()
+					else:
+						# if None then no solutions feasibles
+						continue
 
-	def t_j(self, i, j, t_i):
+					a_j = j.time_window[0]
+
+					t_j = max([t_i + s_i + t_ij, a_j])
+
+					solution.add_vertex(j, t_j)
+
+					if len(solution.vertices)==4:
+						print("AQUI")
+						print(solution)
+
+
+					'''print()
+					print("Para el i=" + str(i))
+					print("Para el j=" + str(j))
+					print("(a_i, b_i): " + str((a_i, b_i)))
+					print("t_i: " + str(t_i))
+					print("s_i+t_ij: " + str(s_i + t_ij))
+					print("(a_j, b_j): " + str((a_j, b_j)))
+					print("t_j: " + str(t_j))'''
+
+					if solution.is_feasible():
+						feasible_solutions.append(solution)
+			return self.choose_sol(feasible_solutions)
+
+	def choose_sol(self, solutions):
+		if len(solutions)==0:
+			"No hay soluciones factibles"
+			return None
+		else:
+			return min(solutions, key=attrgetter('cost'))
+
+	def base_case(self, S, j):
 		"""
-		If a path goes from nodes i to j
-		and passes by node i at t_i,
-		the time service begins at node j is given by
-		t_j = max ( t_i + s_i + t_ij, a_j)
-
+		Base case.
+			f({1,j}, j) = tj      if (1,j) in E (edges)
+			f({1,j}, j) = Inf     otherwise
 		where
-			t_i : time service beginning at node i.
-			s_i : time service duration of node i.
-			t_ij : time cost of travelling i->j.
-			a_j : ready time of node j.
+			a_j <= t_j <= b_j
+			and
+			t_j = max {a_1 + s_1 + t_ij, a_j}
 		"""
-		s_i = i.service_time
-		t_ij = self.graph.time_edge(i,j)
+
+		solution = Solution(self.graph, self.graph.start)
+
+		a_1 = self.graph.start.time_window[0]
+		s_1 = self.graph.start.service_time
+		t_1j = self.graph.time_edge(self.graph.start, j)
 		a_j = j.time_window[0]
-		return max([t_i + s_i + t_ij, a_j])
+		t_j = max([a_1 + s_1 + t_1j, a_j])
 
-	def time_restrictions(self, i, j, t_i, t_j):
-		t_j >=t_i + s_j + t_ij
-		t_ij = self.graph.time_edge(i,j)
-
-		r1 = t_j >= t_i + s_i + t_ij
-		r2 = j.time_window[0] <= t_j and t_j <= j.time_window[1]
-		return r1 and r2
-
-	
+		solution.add_vertex(j, t_j)
+		return solution
 
 if __name__=='__main__':
-	graph = read_from_file('n20w20.001.txt')
+	graph = silva_urrutia_format('n20w20.001_small.txt')
+
 	dumas = Dumas(graph)
-	print(dumas)
+	S = list(dumas.graph.vertices())
+
+	end = dumas.graph.end
+
+	print("S: " + str(S))
+	print()
+	print()
+	print("-----------")
+	r = dumas.f(S, end)
+
+	print()
+	print()
+	print("-----------")
+	print(r)

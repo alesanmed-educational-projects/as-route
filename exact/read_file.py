@@ -3,6 +3,7 @@ from Vertex import Vertex
 
 def silva_urrutia_format(filepath):
 	vertices = []
+	depot = None
 	with open(filepath) as file:
 		line_cont = 1
 		for line in file:
@@ -20,9 +21,12 @@ def silva_urrutia_format(filepath):
 							demand=float(line[3]),
 							time_window=(float(line[4]), float(line[5])),
 							service_time=float(line[6]))
-						vertices.append(vertex)
+						if vertex.label=='1':
+							depot = vertex
+						else:
+							vertices.append(vertex)
 			line_cont += 1
-	graph = Graph(vertices)
+	graph = Graph(depot, vertices)
 	return graph
 
 def lopez_ibanez_blum_format(filepath):
@@ -32,10 +36,11 @@ def lopez_ibanez_blum_format(filepath):
 		for line in file:
 			if line_cont==1:
 				N = int(line)
-			elif line_cont<N
+			elif line_cont<N:
+				pass
 
 def from_google_maps():
 	pass
 
 if __name__=='__main__':
-	read_from_file('n20w20.001.txt')
+	read_from_file('n20w20.001_small.txt')

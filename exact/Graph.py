@@ -1,3 +1,5 @@
+import copy
+
 from Edge import Edge
 
 class Graph(object):
@@ -8,7 +10,7 @@ class Graph(object):
     For vertices a and b, graph[a][b] maps
     to the edge that connects a->b, if it exists."""
 
-    def __init__(self, vertices=[], depot):
+    def __init__(self, depot, vertices=[]):
         """Creates a new graph.
         Vertices are a list of vertex type.
         Depot is a depot vertice. Vehicle starts and ends here.
@@ -18,8 +20,8 @@ class Graph(object):
         for v in vertices:
             self.add_vertex(v)
 
-        depot.label = '0'
-        self.add_vertex(depot)
+        self.add_depot(depot)
+        
 
     def __str__(self):
         return dict.__str__(self.map)
@@ -36,8 +38,22 @@ class Graph(object):
 
         for key in keys:
             if key!=v:
-                self.map[v][key] = Edge(v, key)
-                self.map[key][v] = Edge(key, v)
+                self.map[v][key] = Edge(v, key, 0)
+                self.map[key][v] = Edge(key, v, 0)
+
+    def add_depot(self, v):
+        depot1 = copy.copy(v)
+        depot2 = copy.copy(v)
+        depot1.label = 'start'
+        self.add_vertex(depot1)
+
+        depot2.label = 'end'
+        self.add_vertex(depot2)
+
+        self.start = depot1
+        self.end = depot2
+
+        self.add_edge(Edge(self.start, self.end, float('Inf')))
 
     def add_edge(self, edge):
         """Adds an edge to the graph by adding an entry in both directions.
@@ -67,7 +83,7 @@ class Graph(object):
         """Returns the edge (v, w) if it exists, None otherwise.
         has_edge is a synonym for get_edge"""
         try:
-            return self[v][w]
+            return self.map[v][w]
         except KeyError:
             return None
 
@@ -93,18 +109,11 @@ class Graph(object):
         """Returns the list of edges out of v."""
         return self.map[v].values()
 
-    def cost_edge(self, v, w):
-        """Returns the cost of an edge connecting vertives v and w."""
-        edge = get_edge(v, w)
-        if edge:
-            return edge.cost
-        else:
-            return float('Inf')
-
     def time_edge(self, v, w):
         """Returns the duration of an edge connecting vertives v and w."""
-        edge = get_edge(v, w)
+        edge = self.get_edge(v, w)
         if edge:
             return edge.time
         else:
             return float('Inf')
+    cost_edge = time_edge
