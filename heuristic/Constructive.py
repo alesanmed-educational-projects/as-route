@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import heuristic.utils as utils
+import random
 
 from heuristic.Graph import TSP_Graph
 from heuristic.Solution import Solution
@@ -60,3 +61,14 @@ def random_solution(graph, customers_list):
     solution.set_customer_list(customers_list)
     
     return solution
+    
+def perturbation(solution, level):
+    solution_new = Solution(solution.get_solution().size, solution=solution)
+
+    for i in range(level):
+        index_origin = random.randint(1, solution_new.get_solution().size)
+        index_new = random.randint(1, solution_new.get_solution().size)
+        
+        solution_new.one_shift(index_origin, index_new)
+    
+    return solution_new

@@ -6,17 +6,28 @@ from heuristic.Graph import TSP_Graph
 
 class Solution:
     
-    def __init__(self, n_customers):
-        # Orden de visita de los clientes
-        self.solution = np.empty((n_customers, 1))
-        self.start_time = 0
-        self.graph = None
-        self.distances = None
-        self.customers_list = None
-        self.valid_customers = None
-        self.time_cost = None
-        self.distance_cost = None
-        self.solution_cost = None
+    def __init__(self, n_customers, solution=None):
+        if solution is not None and isinstance(solution, self):
+            self.solution = solution.get_solution()
+            self.start_time = solution.get_start_time()
+            self.graph = solution.get_graph()
+            self.distances = solution.get_distances()
+            self.customers_list = solution.get_customers_list()
+            self.valid_customers = solution.get_valid_customers()
+            self.time_cost = solution.get_time_cost()
+            self.distance_cost = solution.get_distance_cost()
+            self.solution_cost = solution.get_solution_cost()
+        else:
+            # Orden de visita de los clientes
+            self.solution = np.empty((n_customers, 1))
+            self.start_time = 0
+            self.graph = None
+            self.distances = None
+            self.customers_list = None
+            self.valid_customers = None
+            self.time_cost = None
+            self.distance_cost = None
+            self.solution_cost = None
 
     def get_start_time(self):
         return self.get_start_time
@@ -63,6 +74,12 @@ class Solution:
         
         self.solution = solution
     
+    def get_valid_customers(self):
+        if self.valid_customers is None:
+            raise NameError("valid_customers not setted yet")
+        
+        return self.valid_customers
+        
     def is_solution_valid(self):
         if self.valid_customers is None:
             self.compute_validity()
@@ -143,6 +160,18 @@ class Solution:
             self.distance_cost += self.get_distances().get_value(last_customer_index, depot_index)
         
         return self.distance_cost
+        
+    def one_shift(self, customer, new_pos):
+        if customer > new_pos:
+            self.solution = np.concatenate((self.solution[0:new_pos],
+                                            self.solution[customer],
+                                            self.solution[new_pos:customer],
+                                            self.solution[customer + 1:]))
+        elif customer < new_pos:
+            self.solution = np.concatenate((self.solution[0:customer],
+                                            self.solution[customer + 1:new_pos],
+                                            self.solution[customer],
+                                            self.solution[new_pos + 1:]))
         
     def __str__(self):
         return self.get_solution().__str__()
