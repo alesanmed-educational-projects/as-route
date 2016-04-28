@@ -20,7 +20,7 @@ def random_solution(graph, customers_list):
         c_pos = graph.get_customer_index(customer.get_id())
         customers[i] = (customer.get_id(), 
                                  customer.get_window_start(), 
-                                 graph.get_time(depot_pos, c_pos))
+                                 graph.get_value(depot_pos, c_pos))
     
     # Almacen siempre el primero, su ventana empieza en 0 y el tiempo hasta si
     # mismo es 0    

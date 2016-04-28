@@ -3,32 +3,32 @@ import numpy as np
 
 class TSP_Graph:
     def __init__(self, n_customers):
-        self.time_matrix = np.empty((n_customers, n_customers))
+        self.matrix = np.empty((n_customers, n_customers))
         
     def set_ids(self, customer_ids):
         self.customer_ids = customer_ids
     
-    def get_time(self, i, j):
-        return self.time_matrix[i, j]
+    def get_value(self, i, j):
+        return self.matrix[i, j]
         
-    def set_time(self, i, j, time):
-        self.time_matrix[i, j] = time
+    def set_value(self, i, j, time):
+        self.matrix[i, j] = time
     
-    def get_time_matrix(self):
-        return self.time_matrix
+    def get_matrix(self):
+        return self.matrix
     
-    def set_time_matrix(self, time_matrix):
-        if not isinstance(time_matrix, np.ndarray):
-            time_matrix = np.array(time_matrix)            
+    def set_matrix(self, matrix):
+        if not isinstance(matrix, np.ndarray):
+            matrix = np.array(matrix)            
             
-        if time_matrix.shape != self.time_matrix.shape:
+        if matrix.shape != self.matrix.shape:
             raise ValueError("The input matrix shape is not equal to the \
                                 graph's matrix shape. Original shape: {0}. \
                                 New shape: {1}"
-                                .format(self.time_matrix.shape,
-                                        time_matrix.shape))
+                                .format(self.matrix.shape,
+                                        matrix.shape))
                                         
-        self.time_matrix = time_matrix
+        self.matrix = matrix
         
     def get_customer_index(self, customer_id):
         if self.customer_ids is None:
