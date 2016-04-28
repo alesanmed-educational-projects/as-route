@@ -8,13 +8,18 @@ class Graph(object):
     For vertices a and b, graph[a][b] maps
     to the edge that connects a->b, if it exists."""
 
-    def __init__(self, vertices=[]):
+    def __init__(self, vertices=[], depot):
         """Creates a new graph.
+        Vertices are a list of vertex type.
+        Depot is a depot vertice. Vehicle starts and ends here.
         """
         self.map = {}
 
         for v in vertices:
             self.add_vertex(v)
+
+        depot.label = '0'
+        self.add_vertex(depot)
 
     def __str__(self):
         return dict.__str__(self.map)
