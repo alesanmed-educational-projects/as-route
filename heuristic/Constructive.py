@@ -23,8 +23,16 @@ def random_solution(graph, customers_list):
                                  graph.get_value(depot_pos, c_pos))
     
     # Almacen siempre el primero, su ventana empieza en 0 y el tiempo hasta si
-    # mismo es 0    
-    customers = customers[np.argsort(customers, order=('ws', 't'))]
+    # mismo es 0
+    ###############
+    ## Provisional, se quitara la inversion del orden, es para forzar una solucion
+    ## inicial invalida
+    customers = customers[np.argsort(customers, order=('ws', 't'))[::-1]]
+    
+    first = customers[0]
+    last = customers[-1]
+    customers = np.concatenate(([last], customers[1:-1], [first]))
+    ###############
     
     solution = Solution(len(customers_list))
     
