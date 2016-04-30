@@ -10,13 +10,10 @@ class Edge(object):
 		return math.fabs(v2.position[0] - v1.position[0]) + math.fabs(v2.position[1] - v1.position[1])
 
 	def __init__(self, v1, v2, time):
-		"""The Edge constructor takes two vertices and a distance function."""
+		"""The Edge constructor takes two vertices and a time between them."""
 		self.v1 = v1
 		self.v2 = v2
-		if v1.label=='start' and v2.label=='end':
-			self.time = time
-		else:
-			self.time = self.euclidean_distance(v1, v2)
+		self.time = time
 
 	def __repr__(self):
 		"""Return a string representation of this object that can

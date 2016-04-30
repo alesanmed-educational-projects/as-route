@@ -3,7 +3,7 @@ class Solution(object):
 	def __init__(self, graph, depot, time=0.0):
 		self.graph = graph
 		self.vertices = [depot]
-		self.times = [0.0]
+		self.times = [depot.time_window[0]]
 		
 	def __repr__(self):
 		print_this = repr(self.vertices)
@@ -22,6 +22,9 @@ class Solution(object):
 			t_ij += self.graph.time_edge(first, second)
 		return t_ij
 
+	def last_vertex(self):
+		return self.vertices[-1]
+
 	def last_time(self):
 		return self.times[-1]
 
@@ -31,10 +34,9 @@ class Solution(object):
 		cont = 0
 		for first, second in zip(self.vertices, self.vertices[1:]):
 			t_ij = self.graph.time_edge(first, second)
-			s_i = first.service_time
 			t_i = self.times[cont]
 			t_j = self.times[cont+1]
-			result = result and t_j>=t_i+s_i+t_ij
+			result = result and t_j>=t_i+t_ij
 			cont += 1
 
 		for i in range(0, len(self.times)):

@@ -1,26 +1,34 @@
-import copy
-
 from Edge import Edge
 
 class Graph(object):
-    """A Graph is a dictionary of dictionaries.  The outer
+    """
+    A Graph is a dictionary of dictionaries.  The outer
     dictionary maps from a vertex to an inner dictionary.
     The inner dictionary maps from other vertices to edges.
     
     For vertices a and b, graph[a][b] maps
-    to the edge that connects a->b, if it exists."""
+    to the edge that connects a->b, if it exists.
+    (Directed graph implementation)
+    """
 
-    def __init__(self, depot, vertices=[]):
+    def __init__(self, start, end, vertices=[], edges=[]):
         """Creates a new graph.
         Vertices are a list of vertex type.
-        Depot is a depot vertice. Vehicle starts and ends here.
+        Depot is a depot vertice. Vehicle starts and ends there. 
+        Start and end depot contained in Vertices and its edges contained in edges
         """
         self.map = {}
+        self.start = start
+        self.end = end
 
         for v in vertices:
             self.add_vertex(v)
 
-        self.add_depot(depot)
+        for e in edges:
+            self.add_edge(e)
+
+        self.remove_edge(self.start, self.end)
+        self.remove_edge(self.end, self.start)
         
 
     def __str__(self):
@@ -31,53 +39,29 @@ class Graph(object):
         return 'Graph(%s)' % print_this
 
     def add_vertex(self, v):
-        """Add a vertex to the complete graph."""
+        """
+        Add a vertex to the complete graph.
+        Also maps the edges as a complete graph
+        """
 
         keys = self.map.keys()
         self.map[v] = {}
 
         for key in keys:
             if key!=v:
-                self.map[v][key] = Edge(v, key, 0)
-                self.map[key][v] = Edge(key, v, 0)
-
-    def add_depot(self, v):
-        depot1 = copy.copy(v)
-        depot2 = copy.copy(v)
-        depot1.label = 'start'
-        self.add_vertex(depot1)
-
-        depot2.label = 'end'
-        self.add_vertex(depot2)
-
-        self.start = depot1
-        self.end = depot2
-
-        self.add_edge(Edge(self.start, self.end, float('Inf')))
+                self.map[v][key] = Edge(v, key, float('Inf'))
+                self.map[key][v] = Edge(key, v, float('Inf'))
 
     def add_edge(self, edge):
         """Adds an edge to the graph by adding an entry in both directions.
         If there is already an edge connecting these Vertices, the
         new edge replaces it.
         """
-
         self.map[edge.v1][edge.v2] = edge
-        self.map[edge.v2][edge.v1] = edge
 
-    def remove_edge(self, e):
+    def remove_edge(self, v, w):
         """Removes (e) from the graph."""
-
-        del self.map[edge.v1][edge.v2]
-        del self.map[edge.v2][edge.v1]
-
-    def remove_vertex(self, v):
-        if v in self.map:
-            del self.map[v]
-            for keys in self.map:
-                del self.map[keys][v]
-
-    def clean_graph(self):
-        self.map = {}
+        del self.map[v][w]
 
     def get_edge(self, v, w):
         """Returns the edge (v, w) if it exists, None otherwise.
@@ -100,14 +84,6 @@ class Graph(object):
             for keys2 in self.map[keys]:
                 s.append(self.map[keys][keys2])
         return s
-
-    def out_vertices(self, v):
-        """Returns a list of vertices that can be reached in one hop from v."""
-        return self.map[v].keys()
-
-    def out_edges(self, v):
-        """Returns the list of edges out of v."""
-        return self.map[v].values()
 
     def time_edge(self, v, w):
         """Returns the duration of an edge connecting vertives v and w."""
