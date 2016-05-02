@@ -36,11 +36,16 @@ distance_graph.set_matrix(data[1])
 
 customers_list = []
 for customer in customers:
-    customers_list.append(Customer(customer['id'], customer['ws'], customer['we']))
+    customer_obj = Customer(customer['id'], customer['ws'], customer['we'])
+    customer_obj.set_row(distance_graph.get_customer_index(customer['id']))
+    
+    customers_list.append(customer_obj)
     
 solution = random_solution(time_graph, customers_list)
 
 solution.set_distances(distance_graph)
+
+level = 1
 
 print(solution)
 print(solution.is_solution_valid())

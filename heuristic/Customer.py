@@ -8,9 +8,16 @@ class Customer:
         self.window_start = window_start
         self.window_end = window_end
         self.time_visited = None
+        self.row = -1
         
     def get_id(self):
         return self.c_id
+        
+    def get_row(self):
+        return self.row
+
+    def set_row(self, row):
+        self.row = row
         
     def get_window_start(self):
         return self.window_start
@@ -33,6 +40,14 @@ class Customer:
         
         return self.get_window_start() <= self.get_time_visited() and \
                 self.get_window_end() >= self.get_time_visited()
+                
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) \
+            and (self.get_id() == other.get_id() \
+            or self.get_row() == other.get_row())
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def __str__(self):
         return "Customer {0}. Window: {1}-{2}. Visited at {3}".format(

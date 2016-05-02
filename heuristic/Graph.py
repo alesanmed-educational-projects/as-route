@@ -40,3 +40,9 @@ class TSP_Graph:
             raise KeyError("Customer Id does not exists")
         
         return customer_index[0]
+        
+    def get_customer_id(self, customer_row):
+        if self.customer_ids is None:
+            raise NameError("customer_ids vector not setted yet")
+        
+        return self.customer_ids[customer_row]

@@ -18,10 +18,10 @@ def random_solution(graph, customers_list):
     
     for i, customer in enumerate(customers_list):
         depot_pos = graph.get_customer_index(0)        
-        c_pos = graph.get_customer_index(customer.get_id())
-        customers[i] = (customer.get_id(), 
-                                 customer.get_window_start(), 
-                                 graph.get_value(depot_pos, c_pos))
+        c_pos = customer.get_row()
+        customers[i] = (customer.get_row(), 
+                        customer.get_window_start(),
+                        graph.get_value(depot_pos, c_pos))
     
     # Almacen siempre el primero, su ventana empieza en 0 y el tiempo hasta si
     # mismo es 0
@@ -48,8 +48,8 @@ def random_solution(graph, customers_list):
     solution.set_start_time(start_time)
     
     curr_time = start_time
-    for i, c_id in enumerate(solution.get_solution()):
-        customer = next((c for c in customers_list if c.get_id() == c_id), None)
+    for i, c_row in enumerate(solution.get_solution()):
+        customer = next((c for c in customers_list if c.get_row() == c_row), None)
         time_visited = curr_time + customers['t'][i]
 
         if time_visited < customer.get_window_start():
@@ -64,11 +64,18 @@ def random_solution(graph, customers_list):
     
 def perturbation(solution, level):
     solution_new = Solution(solution.get_solution().size, solution=solution)
-
+    
+    min_index = -1
     for i in range(level):
         index_origin = random.randint(1, solution_new.get_solution().size)
         index_new = random.randint(1, solution_new.get_solution().size)
         
+        curr_min = min(index_origin, index_new)
+        
+        if curr_min < min_index:
+            min_index = curr_min
+        
         solution_new.one_shift(index_origin, index_new)
     
+    solution_new.recompute_validity(min_index)
     return solution_new
