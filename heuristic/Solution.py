@@ -83,7 +83,7 @@ class Solution:
         
         return self.valid_customers
         
-    def is_solution_valid(self):
+    def is_valid(self):
         if self.valid_customers is None:
             self.compute_validity()
     
@@ -237,7 +237,7 @@ class Solution:
                                                  self.solution_cost[new_index + 1:]
                                                 ))
     
-    def recompute_validity(self, index):
+    def recompute_validity(self, index, prev_sol=None):
         valid_customers = np.empty(self.valid_customers.shape)
         if index == 1:
             depot = Customer(0, 0, 0)
@@ -287,9 +287,39 @@ class Solution:
 
             customer.set_time_visited(int(time_visited_customer))
             
+            if prev_sol is not None:
+                same_customer = next((c for c in prev_sol.get_customers_list() 
+                                        if c.get_row() == customer.get_row()), 
+                                     None)
+                
+                if same_customer.get_time_visited() == customer.get_time_visited():
+                    valid_customers[i + index:] = 1
+                    break
+            
             valid_customers[i + index] = customer.is_valid()
             
         self.valid_customers = valid_customers
+        
+    def two_opt(self, i, j):
+        self.distance_cost = None
+        self.constructive_obj = None
+        
+        max_idx = max(i, j)
+        min_idx = min(i, j)
+        
+        self.solution = np.concatenate((
+            self.solution[0:min_idx],
+            self.solution[max_idx:min_idx-1:-1],
+            self.solution[max_idx + 1:]
+        ))
+        
+        self.uptade_costs_opt(i, j)
+        
+    def uptade_costs_opt(self, i, j):
+        for index in range(i - 1, j):
+            self.solution_cost[index] = self.get_distances().get_value(
+                                                        self.solution[index],
+                                                        self.solution[index + 1])
     
     def get_constructive_obj(self):
         if self.constructive_obj is None:
@@ -315,6 +345,10 @@ class Solution:
                 self.get_graph().get_value(origin_c.get_row(), 
                                            dest_c.get_row()) \
                 <= dest_c.get_window_end()
+    
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and \
+            np.all(self.get_solution() == other.get_solution())
 
     def __str__(self):
         sol = []

@@ -3,7 +3,7 @@ import googlemaps
 import numpy as np
 
 def get_matrices(coords):
-    gmaps = googlemaps.Client(key='AIzaSyDvEP-1BzJIAL-hY2WTu6xZKTBiqrsJHbE')
+    gmaps = googlemaps.Client(key='AIzaSyBXXX6CCewz4GZGe6T536NkcOdZ1Sb-bbM')
     
     res = gmaps.distance_matrix(coords, coords)
     
