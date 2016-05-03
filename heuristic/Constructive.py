@@ -67,8 +67,8 @@ def perturbation(solution, level):
     
     min_index = -1
     for i in range(level):
-        index_origin = random.randint(1, solution_new.get_solution().size)
-        index_new = random.randint(1, solution_new.get_solution().size)
+        index_origin = random.randint(1, solution_new.get_solution().size - 1)
+        index_new = random.randint(1, solution_new.get_solution().size - 1)
         
         curr_min = min(index_origin, index_new)
         
@@ -78,4 +78,110 @@ def perturbation(solution, level):
         solution_new.one_shift(index_origin, index_new)
     
     solution_new.recompute_validity(min_index)
+
     return solution_new
+    
+def local1shift(solution):    
+    customers_validity = solution.get_valid_customers()
+    
+    valid_customers = np.where(customers_validity == 1)[0]
+    violated_customers = np.where(customers_validity == 0)[0]
+    
+    better_solution = None
+
+    # Backward movement of violated customers    
+    for i in violated_customers:
+        index_origin = i
+        for j in range(i - 1, 0, -1):
+            index_new = j
+                            
+            if not solution.is_arc_valid(i, j):
+                break
+            
+            solution_new = Solution(solution.get_solution().size, solution=solution)                
+            solution_new.one_shift(index_origin, index_new)
+            solution_new.recompute_validity(j)
+            
+            if solution_new.get_constructive_obj() > solution.get_constructive_obj():
+                better_solution = solution_new
+                break
+        
+        if better_solution is not None:
+            break
+        
+    if better_solution is None:
+        # Forward movement of non-violated customers
+        for i in valid_customers:
+            # Depot can't be moved
+            if solution.get_solution()[i] == 0:
+                continue
+
+            index_origin = i
+            for j in range(i + 1, customers_validity.size):
+                index_new = j
+                
+                if not solution.is_arc_valid(j, i):
+                    break
+                
+                solution_new = Solution(solution.get_solution().size, solution=solution)                
+                solution_new.one_shift(index_origin, index_new)
+                solution_new.recompute_validity(i)
+                
+                if solution_new.get_constructive_obj() > solution.get_constructive_obj():
+                    better_solution = solution_new
+                    break
+            
+            if better_solution is not None:
+                break
+            
+    if better_solution is None:
+        # Backward movement of non-violated customers
+        for i in valid_customers:
+            # Depot can't be moved
+            if solution.get_solution()[i] == 0:
+                continue
+
+            index_origin = i
+            for j in range(i - 1, 0, -1):
+                index_new = j
+                                
+                if not solution.is_arc_valid(i, j):
+                    break
+                
+                solution_new = Solution(solution.get_solution().size, solution=solution)                
+                solution_new.one_shift(index_origin, index_new)
+                solution_new.recompute_validity(j)
+                
+                if solution_new.get_constructive_obj() > solution.get_constructive_obj():
+                    better_solution = solution_new
+                    break
+            
+            if better_solution is not None:
+                break
+            
+    if better_solution is None:
+        # Forward movement of violated customers
+        for i in violated_customers:
+            index_origin = i
+            
+            for j in range(i + 1, customers_validity.size):
+                index_new = j
+                
+                if not solution.is_arc_valid(j, i):
+                    break
+                
+                solution_new = Solution(solution.get_solution().size, solution=solution)                
+                solution_new.one_shift(index_origin, index_new)
+                solution_new.recompute_validity(i)
+                
+                if solution_new.get_constructive_obj() > solution.get_constructive_obj():
+                    better_solution = solution_new
+                    break
+            
+            if better_solution is not None:
+                break
+    
+    if better_solution is None:
+        better_solution = solution
+    
+    return better_solution

@@ -8,7 +8,7 @@ from heuristic.Customer import Customer
 class Solution:
     
     def __init__(self, n_customers, solution=None):
-        if solution is not None and isinstance(solution, self):
+        if solution is not None and isinstance(solution, self.__class__):
             self.solution = solution.get_solution()
             self.start_time = solution.get_start_time()
             self.graph = solution.get_graph()
@@ -17,10 +17,11 @@ class Solution:
             self.valid_customers = solution.get_valid_customers()
             self.time_cost = solution.get_time_cost()
             self.distance_cost = solution.get_distance_cost()
-            self.solution_cost = solution.get_solution_cost()
+            self.solution_cost = solution.solution_cost
+            self.constructive_obj = solution.get_constructive_obj()
         else:
             # Orden de visita de los clientes
-            self.solution = np.empty((n_customers, 1))
+            self.solution = np.empty((n_customers,))
             self.start_time = 0
             self.graph = None
             self.distances = None
@@ -29,6 +30,7 @@ class Solution:
             self.time_cost = None
             self.distance_cost = None
             self.solution_cost = None
+            self.constructive_obj = None
 
     def get_start_time(self):
         return self.get_start_time
@@ -77,7 +79,7 @@ class Solution:
     
     def get_valid_customers(self):
         if self.valid_customers is None:
-            raise NameError("valid_customers not setted yet")
+            self.compute_validity()
         
         return self.valid_customers
         
@@ -136,7 +138,7 @@ class Solution:
         if self.get_solution() is None:
             raise NameError("solution not generated yet")
         
-        self.solution_cost = np.empty((self.get_solution().size - 1, 1))
+        self.solution_cost = np.empty((self.get_solution().size - 1,))
 
         for i in range(len(self.get_solution())):
             if i == len(self.solution) - 1:
@@ -167,28 +169,41 @@ class Solution:
 
         if old_pos > new_pos:
             self.distance_cost = None
+            self.constructive_obj = None
             self.solution = np.concatenate((self.solution[0:new_pos],
-                                            self.solution[old_pos],
+                                            [self.solution[old_pos]],
                                             self.solution[new_pos:old_pos],
                                             self.solution[old_pos + 1:]))
         elif old_pos < new_pos:
             self.distance_cost = None
+            self.constructive_obj = None
             self.solution = np.concatenate((self.solution[0:old_pos],
-                                            self.solution[old_pos + 1:new_pos],
-                                            self.solution[old_pos],
-                                            self.solution[new_pos:]))
+                                            self.solution[old_pos + 1:new_pos + 1],
+                                            [self.solution[old_pos]],
+                                            self.solution[new_pos + 1:]))
 
     
     def update_costs_shift(self, old_index, new_index):
         if old_index > new_index:
             solution = self.get_solution()
-            self.solution_cost = np.concatenate((self.solution_cost[0:new_index - 1],
+            if old_index == solution.size - 1:
+                self.solution_cost = np.concatenate((self.solution_cost[0:new_index - 1],
                                                  [self.get_distances().
                                                  get_value(solution[new_index - 1], 
                                                            solution[old_index]),
                                                  self.get_distances().
                                                  get_value(solution[old_index], 
-                                                           solution[new_index + 1])],
+                                                           solution[new_index])],
+                                                 self.solution_cost[new_index:old_index - 1]
+                                                ))
+            else:
+                self.solution_cost = np.concatenate((self.solution_cost[0:new_index - 1],
+                                                 [self.get_distances().
+                                                 get_value(solution[new_index - 1], 
+                                                           solution[old_index]),
+                                                 self.get_distances().
+                                                 get_value(solution[old_index], 
+                                                           solution[new_index])],
                                                  self.solution_cost[new_index:old_index - 1],
                                                  [self.get_distances().
                                                  get_value(solution[old_index - 1],
@@ -197,18 +212,29 @@ class Solution:
                                                 ))
         elif old_index < new_index:
             solution = self.get_solution()
-            self.solution_cost = np.concatenate((self.solution_cost[0:new_index - 1],
+            if new_index == solution.size - 1:
+                self.solution_cost = np.concatenate((self.solution_cost[0:new_index - 1],
                                                  [self.get_distances().
                                                  get_value(solution[old_index - 1],
                                                            solution[old_index + 1])],
-                                                 self.solution_cost[old_index + 1:new_index - 1],
+                                                 self.solution_cost[old_index + 1:new_index],
                                                  [self.get_distances().
-                                                 get_value(solution[new_index - 1], 
+                                                 get_value(solution[new_index], 
+                                                           solution[old_index])]
+                                                ))
+            else:
+                self.solution_cost = np.concatenate((self.solution_cost[0:new_index - 1],
+                                                 [self.get_distances().
+                                                 get_value(solution[old_index - 1],
+                                                           solution[old_index + 1])],
+                                                 self.solution_cost[old_index + 1:new_index],
+                                                 [self.get_distances().
+                                                 get_value(solution[new_index], 
                                                            solution[old_index]),
                                                  self.get_distances().
                                                  get_value(solution[old_index], 
                                                            solution[new_index + 1])],
-                                                 self.solution_cost[new_index:]
+                                                 self.solution_cost[new_index + 1:]
                                                 ))
     
     def recompute_validity(self, index):
@@ -228,7 +254,7 @@ class Solution:
             if depot_time < 0:
                 depot_time = 0
                 
-            depot.set_time_visited(depot_time)
+            depot.set_time_visited(int(depot_time))
             valid_customers[0] = depot.is_valid()
         else:
             valid_customers[0:index] = self.valid_customers[0:index]
@@ -244,7 +270,7 @@ class Solution:
                 raise KeyError("Solution does not contains all of the customers. \
                                 Have you generated a solution yet?")
             
-            customer = self.get_customers_list[customer_index]
+            customer = self.get_customers_list()[customer_index]
             
             prev_customer_row = self.get_solution()[index + i - 1]
             prev_customer = Customer(-1, 0, 0)
@@ -259,11 +285,36 @@ class Solution:
             if time_visited_customer < customer.get_window_start():
                 time_visited_customer = customer.get_window_start()
 
-            customer.set_time_visited(time_visited_customer)
+            customer.set_time_visited(int(time_visited_customer))
             
             valid_customers[i + index] = customer.is_valid()
             
         self.valid_customers = valid_customers
+    
+    def get_constructive_obj(self):
+        if self.constructive_obj is None:
+            value = 0
+            
+            for customer in self.get_customers_list():
+                value += max(0, customer.get_time_visited() - customer.get_window_start())
+                
+            self.constructive_obj = value
+        
+        return self.constructive_obj
+        
+    def is_arc_valid(self, i, j):
+        origin_c = Customer(-1, 0, 0)
+        origin_c.set_row(self.get_solution()[i])
+        origin_c = self.get_customers_list()[self.get_customers_list().index(origin_c)]
+        
+        dest_c = Customer(-1, 0, 0)
+        dest_c.set_row(self.get_solution()[j])
+        dest_c = self.get_customers_list()[self.get_customers_list().index(dest_c)]
+        
+        return origin_c.get_window_start() + \
+                self.get_graph().get_value(origin_c.get_row(), 
+                                           dest_c.get_row()) \
+                <= dest_c.get_window_end()
 
     def __str__(self):
         sol = []

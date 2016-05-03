@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from heuristic.Customer import Customer
 from heuristic.Graph import TSP_Graph
-from heuristic.Constructive import random_solution
+from heuristic.Constructive import random_solution, perturbation, local1shift
 from maps.acme_database import get_customers
 from maps.matrices import get_matrices
 
@@ -40,12 +40,23 @@ for customer in customers:
     customer_obj.set_row(distance_graph.get_customer_index(customer['id']))
     
     customers_list.append(customer_obj)
-    
-solution = random_solution(time_graph, customers_list)
 
+level = 1    
+levelMax = 100
+solution = random_solution(time_graph, customers_list)
 solution.set_distances(distance_graph)
 
-level = 1
+solution = local1shift(solution)
+
+while not solution.is_solution_valid() and level < levelMax:
+    improved_sol = perturbation(solution, level)
+    improved_sol = local1shift(improved_sol)
+    
+    if improved_sol.get_constructive_obj() < solution.get_constructive_obj():
+        solution = improved_sol
+        level = 1
+    else:
+        level += 1
 
 print(solution)
 print(solution.is_solution_valid())
