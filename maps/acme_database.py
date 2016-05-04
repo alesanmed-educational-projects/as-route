@@ -55,7 +55,7 @@ def get_customers(ids):
                 customer['window_start'] = 14*60*60
                 customer['window_end'] = 20*60*60
             elif customer['timeWindow']=='BOTH':
-                customer['window_start'] = 14*60*60
+                customer['window_start'] = 8*60*60
                 customer['window_end'] = 20*60*60
             else:
                 raise ValueError('TimeWindow of customer' + str(id) + 
