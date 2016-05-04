@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from heuristic.Solution import Solution
 
-def local1shift(solution):
+def local1shift(solution, optimize):
     sol_customers = solution.get_solution()
     
     better_solution = None
@@ -16,13 +16,19 @@ def local1shift(solution):
             solution_new = Solution(solution.get_solution().size, solution=solution)                
             solution_new.one_shift(index_origin, index_new)
             
-            if solution_new.get_distance_cost() < solution.get_distance_cost():
-                solution_new.recompute_validity(min(i, j), prev_sol=solution)
-                
-                if solution_new.is_valid():
-                    better_solution = solution_new
-                    break
-            
+            better = False
+            if optimize == 'd':
+                if solution_new.get_distance_cost() < solution.get_distance_cost():
+                    solution_new.recompute_validity(min(i, j), prev_sol=solution)
+                    better = True
+            else:
+                if solution_new.get_time_cost() < solution.get_time_cost():
+                    solution_new.recompute_validity(min(i, j), prev_sol=solution)
+                    better = True
+                    
+            if better and solution_new.is_valid():
+                better_solution = solution_new
+                break
         
         if better_solution is not None:
             break
@@ -32,7 +38,7 @@ def local1shift(solution):
         
     return better_solution
 
-def local2opt(solution):
+def local2opt(solution, optimize):
     sol_customers = solution.get_solution()
     
     better_solution = None
@@ -48,14 +54,21 @@ def local2opt(solution):
             solution_new = Solution(solution.get_solution().size, solution=solution)                
             solution_new.two_opt(index_origin, index_new)
             
-            if solution_new.get_distance_cost() < solution.get_distance_cost():
-                solution_new.recompute_validity(min(i, j), prev_sol=solution)
-                
-                if solution_new.is_valid():
-                    better_solution = solution_new
-                    break
-                elif solution_new.get_valid_customers()[j] == 0:
-                    break
+            better = False
+            if optimize == 'd':
+                if solution_new.get_distance_cost() < solution.get_distance_cost():
+                    solution_new.recompute_validity(min(i, j), prev_sol=solution)
+                    better = True
+            else:
+                if solution_new.get_time_cost() < solution.get_time_cost():                    
+                    solution_new.recompute_validity(min(i, j), prev_sol=solution)
+                    better = True
+                    
+            if better and solution_new.is_valid():
+                better_solution = solution_new
+                break
+            elif better and solution_new.get_valid_customers()[j] == 0:
+                break
             
         
         if better_solution is not None:
@@ -66,12 +79,12 @@ def local2opt(solution):
         
     return better_solution
     
-def vnd(solution):
+def vnd(solution, optimize):
     new_solution = None
     
     while not solution == new_solution:
-        solution = local1shift(solution)
+        solution = local1shift(solution, optimize)
         new_solution = Solution(solution.get_solution().size, solution=solution)
-        solution = local2opt(solution)
+        solution = local2opt(solution, optimize)
         
     return new_solution

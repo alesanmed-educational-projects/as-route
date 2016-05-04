@@ -4,8 +4,7 @@ import os
 
 from heuristic.Customer import Customer
 from heuristic.Graph import TSP_Graph
-from heuristic.Constructive import random_solution, perturbation, local1shift
-from heuristic.VND import vnd
+from heuristic.TPH import TPH
 from maps.acme_database import get_customers
 from maps.matrices import get_matrices
 
@@ -60,49 +59,13 @@ for customer in customers:
     
     customers_list.append(customer_obj)
 
-best_sol = None
-iterMax = 100
-for _ in range(iterMax):
-    level = 1    
-    levelMax = 100
-    solution = random_solution(time_graph, customers_list)
-    solution.set_distances(distance_graph)
-    
-    solution = local1shift(solution)
-    
-    while not solution.is_valid() and level < levelMax:
-        improved_sol = perturbation(solution, level)
-        improved_sol = local1shift(improved_sol)
-        
-        if improved_sol.get_constructive_obj() < solution.get_constructive_obj():
-            solution = improved_sol
-            level = 1
-        else:
-            level += 1
-            
-    print("Finished constructive phase. Found valid solution: {0}".format(solution.is_valid()))
-    
-    if solution.is_valid():
-        print(solution)
-        level = 1
-        solution = vnd(solution)
-        
-        while level < levelMax:
-            improved_sol = perturbation(solution, level)
-            improved_sol = vnd(improved_sol)
-            
-            if improved_sol.get_distance_cost() < solution.get_distance_cost():
-                solution = improved_sol
-                level = 1
-            else:
-                level += 1
-    
-    if best_sol is None:
-        best_sol = solution
-    elif not best_sol.is_valid() and solution.is_valid():
-        best_sol = solution
-    elif solution.get_distance_cost() < best_sol.get_distance_cost():
-        best_sol = solution
+tph = TPH(20, 30)
+tph.set_customers_ids(customers_ids)
+tph.set_customers_list(customers_list)
+tph.set_distance_matrix(data[1])
+tph.set_time_matrix(data[0])
+
+best_sol = tph.run()
         
 print(best_sol)
 print(best_sol.is_valid())

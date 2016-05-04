@@ -166,17 +166,19 @@ class Solution:
         
     def one_shift(self, old_pos, new_pos):
         self.update_costs_shift(old_pos, new_pos)
-
+        
         if old_pos > new_pos:
             self.distance_cost = None
             self.constructive_obj = None
+            self.time_cost = None
             self.solution = np.concatenate((self.solution[0:new_pos],
                                             [self.solution[old_pos]],
                                             self.solution[new_pos:old_pos],
                                             self.solution[old_pos + 1:]))
         elif old_pos < new_pos:
             self.distance_cost = None
-            self.constructive_obj = None
+            self.constructive_obj = None            
+            self.time_cost = None
             self.solution = np.concatenate((self.solution[0:old_pos],
                                             self.solution[old_pos + 1:new_pos + 1],
                                             [self.solution[old_pos]],
@@ -303,6 +305,7 @@ class Solution:
     def two_opt(self, i, j):
         self.distance_cost = None
         self.constructive_obj = None
+        self.time_cost = None
         
         max_idx = max(i, j)
         min_idx = min(i, j)
@@ -316,11 +319,12 @@ class Solution:
         self.uptade_costs_opt(i, j)
         
     def uptade_costs_opt(self, i, j):
+        self.time_cost = None
         for index in range(i - 1, j):
             self.solution_cost[index] = self.get_distances().get_value(
                                                         self.solution[index],
                                                         self.solution[index + 1])
-    
+
     def get_constructive_obj(self):
         if self.constructive_obj is None:
             value = 0

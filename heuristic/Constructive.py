@@ -11,23 +11,29 @@ def random_solution(graph, customers_list):
         utils.raise_value_error(graph, TSP_Graph, type(graph))
     
     if not isinstance(customers_list, list):
-        utils.raise_value_error(customers_list, list, type(customers_list))
+        utils.raise_value_error("customers_list", list, type(customers_list))
         
     customers = np.empty((len(customers_list),), 
-                         dtype=[('id', 'i4'), ('ws', 'i8'), ('t', 'i8')])
+                         dtype=[('id', 'i4'), ('ws', 'i8'), ('we', 'i8'), ('t', 'i8')])
     
     for i, customer in enumerate(customers_list):
         depot_pos = graph.get_customer_index(0)        
         c_pos = customer.get_row()
         customers[i] = (customer.get_row(), 
                         customer.get_window_start(),
+                        customer.get_window_end(),
                         graph.get_value(depot_pos, c_pos))
     
     # Almacen siempre el primero, su ventana empieza en 0 y el tiempo hasta si
     # mismo es 0
     
-    customers = customers[np.argsort(customers, order=('ws', 't'))]
+    customers = customers[np.argsort(customers, order=('we', 't'))]
     
+    depot = np.where(customers['id'] == 0)[0][0]
+    
+    customers = np.concatenate(([customers[depot]],
+                                customers[0:depot],
+                                customers[depot+1:]))
     ###############
     ## Provisional, se quitara la inversion del orden, es para forzar una solucion
     ## inicial invalida
@@ -63,12 +69,14 @@ def random_solution(graph, customers_list):
     
     solution.set_customer_list(customers_list)
     
+    solution.compute_validity()
+    
     return solution
     
 def perturbation(solution, level):
-    solution_new = Solution(solution.get_solution().size, solution=solution)
+    solution_new = Solution(solution.get_solution().size, solution=solution)    
     
-    min_index = -1
+    min_index = solution_new.get_solution().size * 10000
     for i in range(level):
         index_origin = random.randint(1, solution_new.get_solution().size - 1)
         index_new = random.randint(1, solution_new.get_solution().size - 1)
@@ -81,16 +89,18 @@ def perturbation(solution, level):
         solution_new.one_shift(index_origin, index_new)
     
     solution_new.recompute_validity(min_index)
-
+    solution_new.compute_validity()
+        
     return solution_new
     
-def local1shift(solution):    
+def local1shift(solution):
     customers_validity = solution.get_valid_customers()
     
     valid_customers = np.where(customers_validity == 1)[0]
     violated_customers = np.where(customers_validity == 0)[0]
     
     better_solution = None
+    min_index = customers_validity.size * 10000
 
     # Backward movement of violated customers    
     for i in violated_customers:
@@ -103,7 +113,10 @@ def local1shift(solution):
             
             solution_new = Solution(solution.get_solution().size, solution=solution)                
             solution_new.one_shift(index_origin, index_new)
-            solution_new.recompute_validity(j)
+            min_ = min(index_origin, index_new)
+
+            if min_ < min_index:            
+                min_index = min_
             
             if solution_new.get_constructive_obj() > solution.get_constructive_obj():
                 better_solution = solution_new
@@ -128,7 +141,10 @@ def local1shift(solution):
                 
                 solution_new = Solution(solution.get_solution().size, solution=solution)                
                 solution_new.one_shift(index_origin, index_new)
-                solution_new.recompute_validity(i)
+                min_ = min(index_origin, index_new)
+
+                if min_ < min_index:            
+                    min_index = min_
                 
                 if solution_new.get_constructive_obj() > solution.get_constructive_obj():
                     better_solution = solution_new
@@ -153,7 +169,10 @@ def local1shift(solution):
                 
                 solution_new = Solution(solution.get_solution().size, solution=solution)                
                 solution_new.one_shift(index_origin, index_new)
-                solution_new.recompute_validity(j)
+                min_ = min(index_origin, index_new)
+
+                if min_ < min_index:            
+                    min_index = min_
                 
                 if solution_new.get_constructive_obj() > solution.get_constructive_obj():
                     better_solution = solution_new
@@ -175,7 +194,10 @@ def local1shift(solution):
                 
                 solution_new = Solution(solution.get_solution().size, solution=solution)                
                 solution_new.one_shift(index_origin, index_new)
-                solution_new.recompute_validity(i)
+                min_ = min(index_origin, index_new)
+
+                if min_ < min_index:            
+                    min_index = min_
                 
                 if solution_new.get_constructive_obj() > solution.get_constructive_obj():
                     better_solution = solution_new
@@ -186,5 +208,8 @@ def local1shift(solution):
     
     if better_solution is None:
         better_solution = solution
-    
+
+    better_solution.recompute_validity(min_index)
+    better_solution.compute_validity()
+
     return better_solution
