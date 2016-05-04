@@ -110,12 +110,3 @@ class Dumas(object):
 		"""Create new solution"""
 		solution = Solution(self.graph, self.graph.start)
 		return solution
-
-if __name__=='__main__':
-	graph = lopez_ibanez_blum_format('examples/n20w20.001.txt')
-	dumas = Dumas(graph)
-	r = dumas.run()
-	print("-----------")
-	print(r)
-	print(r.is_feasible())
-	print(r.total_cost())
