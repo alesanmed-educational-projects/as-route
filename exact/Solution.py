@@ -17,10 +17,7 @@ class Solution(object):
 		self.cost = self.total_cost()
 
 	def total_cost(self):
-		t_ij = 0
-		for first, second in zip(self.vertices, self.vertices[1:]):
-			t_ij += self.graph.time_edge(first, second)
-		return t_ij
+		return self.last_time()-self.times[0]
 
 	def last_vertex(self):
 		return self.vertices[-1]

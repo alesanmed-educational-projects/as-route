@@ -1,6 +1,6 @@
 from operator import attrgetter
-from Solution import Solution
-from read_file import lopez_ibanez_blum_format
+from exact.Solution import Solution
+from exact.read_file import lopez_ibanez_blum_format
 
 class Dumas(object):
 	"""Problem implementation"""

@@ -1,4 +1,4 @@
-from Edge import Edge
+from exact.Edge import Edge
 
 class Graph(object):
     """
