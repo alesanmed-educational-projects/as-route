@@ -25,7 +25,10 @@ print(best_sol.is_valid())
 print(best_sol.get_time_cost())
 print(best_sol.get_distance_cost())
 print(best_sol.get_valid_customers())
+
 for customer in best_sol.get_solution():
-    c = Customer(customer, 0, 0)
+    c = Customer(-1, 0, 0)
+    c.set_row(customer)
+
     print(best_sol.get_customers_list()[best_sol.get_customers_list().index(c)])
     

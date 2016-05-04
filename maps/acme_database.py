@@ -42,12 +42,11 @@ def get_customers(ids):
             customer = {
                 '_id' : id,
                 'coordinates': "37.358380;-5.988009",
-                'window_start': 8*60*60,
-                'window_end': 20*60*60
+                'window_start': 0*60*60,
+                'window_end': 24*60*60
             }
         else:
             customer = db.actors.find({'_id': id})[0]
-        # El tercero sera la ventana de tiempo. Cada cosa en su momento
             if customer['timeWindow']=='MORNING':
                 customer['window_start'] = 8*60*60
                 customer['window_end'] = 14*60*60
