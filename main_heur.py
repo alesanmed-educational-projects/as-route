@@ -85,6 +85,8 @@ def run_acmesupermarket():
                         )
 
         route['customers'] = [int(id_) for id_ in best_sol.get_solution()]
+        route['customers'][0] = -1
+        route['customers'].append(-1)
         
         for i, customer in enumerate(best_sol.get_solution()):
             c = Customer(-1, 0, 0)
@@ -92,6 +94,15 @@ def run_acmesupermarket():
 
             cust = best_sol.get_customers_list()[best_sol.get_customers_list().index(c)]
             route['times'][i] = cust.get_time_visited()
+        route['times'].append(23*60*60)
+
+        for i, s in enumerate(route['times']):
+            hour = int(s/3600)
+            minute = int((s-(hour*3600))/60)
+            second = int(s-((hour*3600)+(minute*60)))
+            t = datetime(today.year, today.month, today.day, 
+                hour, minute, second)
+            route['times'][i] = t
 
     else:
         route['customers'] = []
