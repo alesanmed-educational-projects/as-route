@@ -60,7 +60,7 @@ def run_acmesupermarket():
 
 		result_customers = []
 		for vertex in sol.vertices:
-			if vertex.label=='start':
+			if vertex.label!='start' and vertex.label!='end':
 				result_customers.append(-1)
 			elif vertex.label=='end':
 				result_customers.append(-1)
