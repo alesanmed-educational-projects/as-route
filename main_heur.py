@@ -24,9 +24,10 @@ def run_acmesupermarket():
     route = {
         'day' : today.day,
         'month': today.month,
-        'year': today.year
+        'year': today.year,
+        'times': [None] * customers_ids.size
     }
-
+    
     if len(customers):
         if os.path.isfile('matrices.npy'):
             data = np.load('matrices.npy')
@@ -48,13 +49,10 @@ def run_acmesupermarket():
             customer_obj.set_row(distance_graph.get_customer_index(customer['id']))
             
             customers_list.append(customer_obj)
-
+        
         searchingSolution = True
         deleted_customers = []
         while (searchingSolution):
-            for c in customers:
-                print(c)
-
             tph = TPH(20, 50, optimize='t')
             tph.set_customers_ids(customers_ids)
             tph.set_customers_list(customers_list)
@@ -86,8 +84,7 @@ def run_acmesupermarket():
                             {"$set": {"deliveryDate": tomorrow}}
                         )
 
-        route['customers'] = best_sol.get_solution()
-        route['customers'][np.where(route['customers'] == 0)] = -1
+        route['customers'] = [int(id_) for id_ in best_sol.get_solution()]
         
         for i, customer in enumerate(best_sol.get_solution()):
             c = Customer(-1, 0, 0)
@@ -96,12 +93,9 @@ def run_acmesupermarket():
             cust = best_sol.get_customers_list()[best_sol.get_customers_list().index(c)]
             route['times'][i] = cust.get_time_visited()
 
-        print(route['customers'])
     else:
         route['customers'] = []
         route['times'] = []
-
-    print(route)
 
     db.routes.insert_one(route)
 
