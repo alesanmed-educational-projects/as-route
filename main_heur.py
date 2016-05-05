@@ -84,7 +84,7 @@ def run_acmesupermarket():
                             {"$set": {"deliveryDate": tomorrow}}
                         )
 
-        route['customers'] = [int(id_) for id_ in best_sol.get_solution()]
+        route['customers'] = [int(customers_ids[int(id_)]) for id_ in best_sol.get_solution()]
         route['customers'][0] = -1
         route['customers'].append(-1)
         
