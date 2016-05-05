@@ -3,7 +3,7 @@ class Solution(object):
 	def __init__(self, graph, depot, time=0.0):
 		self.graph = graph
 		self.vertices = [depot]
-		self.times = [depot.time_window[0]]
+		self.times = [float(depot.time_window[0])]
 		
 	def __repr__(self):
 		print_this = repr(self.vertices)
@@ -13,7 +13,7 @@ class Solution(object):
 
 	def add_vertex(self, vertex, time):
 		self.vertices.append(vertex)
-		self.times.append(time)
+		self.times.append(float(time))
 		self.cost = self.total_cost()
 
 	def total_cost(self):

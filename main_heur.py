@@ -10,7 +10,7 @@ from pymongo import MongoClient
 from maps.acme_database import today_customers, today_purchases
 from maps.matrices import get_matrices
 
-def run_acmesupermarket(ids=None):
+def run_acmesupermarket():
     client = MongoClient()
     db = client['Acme-Supermarket']
     
@@ -52,6 +52,9 @@ def run_acmesupermarket(ids=None):
         searchingSolution = True
         deleted_customers = []
         while (searchingSolution):
+            for c in customers:
+                print(c)
+
             tph = TPH(20, 50, optimize='t')
             tph.set_customers_ids(customers_ids)
             tph.set_customers_list(customers_list)
@@ -59,12 +62,6 @@ def run_acmesupermarket(ids=None):
             tph.set_time_matrix(data[0])
             
             best_sol = tph.run()
-        
-            print(best_sol)
-            print(best_sol.is_valid())
-            print(best_sol.get_time_cost())
-            print(best_sol.get_distance_cost())
-            print(best_sol.get_valid_customers())
 
             if best_sol.is_valid():
                 searchingSolution = False
@@ -98,8 +95,15 @@ def run_acmesupermarket(ids=None):
 
             cust = best_sol.get_customers_list()[best_sol.get_customers_list().index(c)]
             route['times'][i] = cust.get_time_visited()
+
+        print(route['customers'])
     else:
         route['customers'] = []
         route['times'] = []
 
     print(route)
+
+    db.routes.insert_one(route)
+
+if __name__=="__main__":
+    run_acmesupermarket()

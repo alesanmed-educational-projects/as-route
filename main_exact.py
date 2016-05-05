@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
+import datetime
 import os
 import numpy as np
 
@@ -14,6 +15,9 @@ def run_acmesupermarket():
 	purchases = today_purchases()
 	customers = today_customers()
 	customers_coords = [coords.replace(b';', b',').decode('utf-8') for coords in customers['c']]
+
+	client = MongoClient()
+	db = client['Acme-Supermarket']
 
 	today = datetime.utcnow().date()
 	route = {
@@ -40,11 +44,6 @@ def run_acmesupermarket():
 			graph = from_google_maps(customers, time_matrix)
 			dumas = Dumas(graph)
 			sol = dumas.run()
-			print("-----------")
-			print(sol)
-			print(sol.times)
-			print(sol.is_feasible())
-			print(sol.total_cost())
 
 			if sol.is_feasible():
 				searchingSolution = False
@@ -68,8 +67,18 @@ def run_acmesupermarket():
 			else:
 				result_customers.append(int(vertex.label))
 
+		result_times = []
+		for s in sol.times:
+			hour = int(s/3600)
+			minute = int((s-(hour*3600))/60)
+			second = int(s-((hour*3600)+(minute*60)))
+			t = datetime(today.year, today.month, today.day, 
+				hour, minute, second)
+			result_times.append(t)
+
+
 		route['customers'] = result_customers
-		route['times'] = sol.times
+		route['times'] = result_times
 
 
 	else:
@@ -78,9 +87,7 @@ def run_acmesupermarket():
 
 	print(route)
 
-	#client = MongoClient()
-	#db = client['Acme-Supermarket']
-	#db.routes.insert_one(route)
+	db.routes.insert(route)
 
 def run_example():
 	n = input("Numero de clientes [10-14]: ")
