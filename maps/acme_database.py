@@ -41,7 +41,7 @@ def get_customers(ids):
         if id == 0:
             customer = {
                 '_id' : id,
-                'coordinates': "37.358380;-5.988009",
+                'coordinates': "37.358380;-5.988009", #ETSII
                 'window_start': 0*60*60,
                 'window_end': 24*60*60
             }

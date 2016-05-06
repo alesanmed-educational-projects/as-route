@@ -3,9 +3,10 @@ import googlemaps
 import math
 import numpy as np
 import time
+import apikey as api
 
 def get_matrices(coords):
-    gmaps = googlemaps.Client(key='AIzaSyDvEP-1BzJIAL-hY2WTu6xZKTBiqrsJHbE	')
+    gmaps = googlemaps.Client(key=api.key)
     
     coords = np.array(coords)    
     
